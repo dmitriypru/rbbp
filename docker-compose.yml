@@ -1,0 +1,47 @@
+version: "3.7"
+
+services:
+  setup:
+    build:
+      context: .
+      dockerfile: docker_cfg/setup/Dockerfile
+
+  redis:
+    image: redis:5.0.5-alpine
+    restart: on-failure
+    ports:
+      - '6379:6379'
+    sysctls:
+      net.core.somaxconn: 1024
+
+  postgres:
+    image: postgres:10.8-alpine
+    volumes:
+      - ./docker_volumes/postgres/data/:/var/lib/postgresql/data/
+    env_file:
+      - ./docker_cfg/postgres/postgres_env.env
+    restart: on-failure
+
+  celery:
+    build:
+      context: .
+      dockerfile: docker_cfg/celery/Dockerfile
+    volumes:
+      - ./checkers/:/checkers/
+    restart: on-failure
+
+  celerybeat:
+    build:
+      context: .
+      dockerfile: docker_cfg/celerybeat/Dockerfile
+    restart: on-failure
+
+  flower:
+    build:
+      context: .
+      dockerfile: docker_cfg/flower/Dockerfile
+    env_file:
+      - docker_cfg/flower/flower_env.env
+    ports:
+      - '5555:5555'
+    restart: on-failure
