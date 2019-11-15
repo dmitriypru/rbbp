@@ -5,6 +5,9 @@ import tornado.httpserver
 import db
 
 class WebSocket(tornado.websocket.WebSocketHandler):
+    def check_origin(self, origin):
+        return True
+
     def game_info(self):
         game = db.models.Game.select().first()
         team_attacker = db.models.Team.select().where(db.models.Team.type == 'red').first().name
