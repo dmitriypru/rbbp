@@ -1,7 +1,7 @@
 game:
-  round_time: 120
+  round_time: 5
   round_count: 30
-  start_time: 2019-04-18 15:47:00+03:00 
+  start_time: 2020-04-18 15:47:00+03:00 
   checkers_path: /checkers/
 
 celery:
@@ -24,7 +24,7 @@ flower:
 
 db:
   postgres:
-    host: postgres
+    host: 192.168.99.107
     port: 5432
     user: roma
     password: xyecoc
@@ -33,6 +33,7 @@ db:
 team:
   - name: "Red team"
     type: "red"
+    ip: null
 
   - name: "Blue team"
     type: "blue"
@@ -41,6 +42,5 @@ team:
 tasks:
   - name: Test task
     checker: awesomeBlog/check.py 
-    env_path: /additional/env
     gets: 1
     puts: 1

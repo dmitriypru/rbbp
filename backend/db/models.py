@@ -1,6 +1,9 @@
-from peewee import Model, CharField, ForeignKeyField, IntegerField, BooleanField, IPField, DateTimeField
-from . import db
+from peewee import Model, CharField, ForeignKeyField, IntegerField, BooleanField, IPField, DateTimeField, PostgresqlDatabase
 import datetime
+import cfg
+
+db_data = cfg.db_cfg()['postgres']
+db = PostgresqlDatabase(db_data['name'], user=db_data['user'], password=db_data['password'], host=db_data['host'], port=db_data['port'])
 
 class BaseModel(Model):
     class Meta:
@@ -14,12 +17,11 @@ class Game(BaseModel):
 class Team(BaseModel):
     name = CharField(max_length=255)
     type = CharField(max_length=4)
-    ip = IPField(null=True)
+    ip = CharField(max_length=255, null=True)
 
 class Task(BaseModel):
     name = CharField(max_length=255)
     checker = CharField(max_length=255)
-    env = CharField(max_length=255)
     gets = IntegerField(default=1)
     puts = IntegerField(default=1)
     status = IntegerField(default=104)
@@ -31,6 +33,7 @@ class Flag(BaseModel):
 
 class Check(BaseModel):
     status = IntegerField()
+    task = ForeignKeyField(Task, on_delete='CASCADE')
     command = CharField(max_length=5)
     message = CharField(max_length=255)
     round = IntegerField()

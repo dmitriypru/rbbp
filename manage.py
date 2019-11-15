@@ -18,7 +18,7 @@ def setup_db(config):
     postgres_port = db_config['port']
     postgres_user = db_config['user']
     postgres_password = db_config['password']
-    postgres_db = db_config['dbname']
+    postgres_db = db_config['name']
 
     postgres_config = [
         'POSTGRES_HOST={postgres_host}'.format(postgres_host=postgres_host),

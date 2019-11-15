@@ -2,12 +2,12 @@ from celery import shared_task, chain
 from celery.signals import worker_ready
 from celery.utils.log import get_task_logger
 import requests
-import backend.db as db
-import backend.cfg as cfg
+import db
+import cfg
 
 @worker_ready.connect
 def startup(**_kwargs):
-    db.db.create_tables([db.models.Check, db.models.Flag, db.models.Game, db.models.Submit, db.models.Task, db.models.Team])
+    db.models.db.create_tables([db.models.Check, db.models.Flag, db.models.Game, db.models.Submit, db.models.Task, db.models.Team])
     if db.models.Game.select().count() == 0:
         db.models.Game.create(running=False, score=0, round=0)
 
@@ -17,7 +17,7 @@ def startup(**_kwargs):
         
         tasks = cfg.task_cfg()
         for task in tasks:
-            db.models.Task.create(name=task['name'], checker=task['checker'], env=task['env'], gets=task['gets'], puts=task['puts'], status=104)
+            db.models.Task.create(name=task['name'], checker=task['checker'], gets=task['gets'], puts=task['puts'], status=104)
         
     start_game.apply_async(eta=cfg.game_cfg()['start_time'])
 
@@ -37,5 +37,6 @@ def process_round():
         return 
     
     tasks = db.models.Task.select()
-
-    print(1)
+    
+    game.round += 1
+    game.save()
