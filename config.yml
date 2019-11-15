@@ -24,7 +24,7 @@ flower:
 
 db:
   postgres:
-    host: 192.168.99.107
+    host: postgres
     port: 5432
     user: roma
     password: xyecoc

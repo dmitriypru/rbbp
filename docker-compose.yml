@@ -31,7 +31,7 @@ services:
       context: .
       dockerfile: docker_cfg/celery/Dockerfile
     links:
-      - "postgres:database"
+      - "postgres"
     volumes:
       - ./checkers/:/checkers/
     restart: on-failure
@@ -41,7 +41,7 @@ services:
       context: .
       dockerfile: docker_cfg/celerybeat/Dockerfile
     links:
-      - "postgres:database"
+      - "postgres"
     restart: on-failure
 
   flower:
@@ -49,7 +49,7 @@ services:
       context: .
       dockerfile: docker_cfg/flower/Dockerfile
     links:
-      - "postgres:database"
+      - "postgres"
     env_file:
       - docker_cfg/flower/flower_env.env
     restart: on-failure
@@ -61,7 +61,7 @@ services:
     ports:
       - 8888:8888
     links:
-      - "postgres:database"
+      - "postgres"
     restart: on-failure
 
   nginx:
