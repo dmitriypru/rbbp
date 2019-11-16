@@ -1,5 +1,8 @@
 version: "3.7"
 
+volumes:
+  react_build:
+
 services:
   setup:
     build:
@@ -80,14 +83,28 @@ services:
     links:
       - "postgres:postgres"
 
+  frontend:
+    build:
+      context: .
+      dockerfile: docker_cfg/frontend/Dockerfile
+    links:
+      - "api:api"
+    env_file:
+      - docker_cfg/frontend/env.env
+      
+    volumes:
+      - react_build:/react_build/
+    restart: on-failure
+
   nginx:
     build:
       context: .
       dockerfile: docker_cfg/nginx/Dockerfile
-#    volumes:
-#      - react_build:/react_build
+    volumes:
+      - react_build:/react_build
     ports:
       - 80:80
+      
     restart: on-failure
     links:
       - flower

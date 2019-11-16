@@ -1,4 +1,6 @@
 .vscode/
+docker_volumes/
+checker_venv/
 migrations/
 media/
 test.*

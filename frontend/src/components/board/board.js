@@ -20,7 +20,7 @@ class board extends Component {
         };
     };
 
-    ws = new WebSocket('ws://192.168.99.100:8888')
+    ws = new WebSocket('ws://192.168.99.108:8888');
 
     componentDidMount() {
 
@@ -38,7 +38,7 @@ class board extends Component {
                 tasks: {
                     task_name: message['tasks'][0]['task_name'],
                     count_of_flags: message['tasks'][0]['count_of_flags'],
-                    status: message['tasks'][0]['statsus'],
+                    status: message['tasks'][0]['status'],
                     sla: message['tasks'][0]['sla']
                 },
                 round: message['round']
@@ -92,10 +92,10 @@ class board extends Component {
                 </div>
 
                 <div class="score_left">
-                    <h2 class='num_left'>{this.state.points_a}</h2>
+                    <h2 class='num_left'>{this.state.points_b}</h2>
                 </div>
                 <div class="score_right">
-                    <h2 class='num_right'>{this.state.points_b}</h2>
+                    <h2 class='num_right'>{this.state.points_a}</h2>
                 </div>
                 <div class="round">
                     <h1>Round: {this.state.round}</h1>
