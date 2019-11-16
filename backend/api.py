@@ -4,6 +4,10 @@ import tornado.websocket
 import tornado.httpserver
 import db
 import json
+import datetime
+from tornado.ioloop import PeriodicCallback
+
+loop = tornado.ioloop.IOLoop.instance()
 
 class WebSocket(tornado.websocket.WebSocketHandler):
     def check_origin(self, origin):
@@ -26,7 +30,8 @@ class WebSocket(tornado.websocket.WebSocketHandler):
         return self.write_message(json.dumps({'team_attacker': team_attacker, 'team_defencer':team_defencer, 'score': score, 'round': rounds, 'tasks': tasks_data}))
 
     def open(self):
-        self.game_info()
+        self.callback = PeriodicCallback(callback_time=5000, callback=self.game_info)
+        self.callback.start()
 
 if __name__ == "__main__":
     app = tornado.web.Application([
@@ -35,4 +40,4 @@ if __name__ == "__main__":
 
     http_server = tornado.httpserver.HTTPServer(app)
     http_server.listen(8888)
-    tornado.ioloop.IOLoop.instance().start()
+    loop.start()

@@ -3,6 +3,7 @@ import sys
 import os
 import shutil
 import subprocess
+import virtualenv
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -51,11 +52,22 @@ def setup_flower(config):
     with open(flower_env_path, 'w') as f:
         f.write('\n'.join(flower_config))
 
+def create_env(config):
+    conf_path = os.path.join(BASE_DIR, 'config.yml')
+    config = yaml.load(open(conf_path), Loader=yaml.FullLoader)
+    env_path = os.path.join(BASE_DIR, config['game']['checkers_path'], 'checker_venv/')
+    if not os.path.exists(env_path):
+        virtualenv.create_environment(env_path)
+    if os.path.exists(os.path.join(BASE_DIR, config['game']['checkers_path'], 'requirements.txt')):
+        cmd = f"source {env_path}/bin/activate && pip install -r {os.path.join(BASE_DIR, config['game']['checkers_path'], 'requirements.txt')}"
+        os.system(cmd)
+
 def setup_config():
     conf_path = os.path.join(BASE_DIR, 'config.yml')
     config = yaml.load(open(conf_path), Loader=yaml.FullLoader)
     setup_db(config)
     setup_flower(config)
+    create_env(config)
 
 def clear_db():
     data_path = os.path.join(BASE_DIR, 'docker_volumes/postgres')

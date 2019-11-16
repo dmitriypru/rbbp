@@ -1,4 +1,4 @@
-from peewee import Model, CharField, ForeignKeyField, IntegerField, BooleanField, IPField, DateTimeField, PostgresqlDatabase
+from peewee import Model, CharField, ForeignKeyField, IntegerField, BooleanField, IPField, DateTimeField, PostgresqlDatabase, TextField
 import datetime
 import cfg
 
@@ -24,10 +24,14 @@ class Task(BaseModel):
     checker = CharField(max_length=255)
     gets = IntegerField(default=1)
     puts = IntegerField(default=1)
+    vulns = IntegerField()
     status = IntegerField(default=104)
+    timeout = IntegerField()
 
 class Flag(BaseModel):
     flag = CharField(max_length=255)
+    flag_id = CharField(max_length=255)
+    vuln = IntegerField()
     task = ForeignKeyField(Task, on_delete='CASCADE')
     round = IntegerField()
 
@@ -35,7 +39,8 @@ class Check(BaseModel):
     status = IntegerField()
     task = ForeignKeyField(Task, on_delete='CASCADE')
     command = CharField(max_length=5)
-    message = CharField(max_length=255)
+    message = TextField(null=True)
+    error = TextField(null=True)
     round = IntegerField()
 
 class Submit(BaseModel):
