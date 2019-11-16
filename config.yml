@@ -1,8 +1,7 @@
 game:
-  round_time: 60
+  round_time: 15
   round_count: 30
-  start_time: 2019-04-18 15:47:00+03:00 
-  checkers_path: checkers/
+  start_time: 2019-11-16 07:47:00+03:00 
 
 celery:
   broker_url: redis://redis:6379/1
@@ -26,8 +25,8 @@ db:
   postgres:
     host: postgres
     port: 5432
-    user: dbuser
-    password: dbpass
+    user: asdasd
+    password: asd123asd
     name: test_db
 
 team:

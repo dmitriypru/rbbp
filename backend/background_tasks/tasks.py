@@ -15,27 +15,29 @@ def check_action(task_id, round):
 
     tmp_verdict = db.models.Check.create(
         status=task_status('CHECKER_ERROR'),
+        task=task,
         error='Check pending',
         message='',
         command='check',
+        round=round
     )
 
     checker_verdict = run_check(checker_path=task.checker,host=team.ip,timeout=task.timeout, round=round)
 
-    if checker_verdict.status != task_status('UP'):
-        tmp_verdict.status = checker_verdict.status
-        task.status = checker_verdict.status
-        tmp_verdict.save()
-        task.save()
-        game = db.models.Game.select().first()
-        if task.status == task_status('UP'):
-            game.score += 20
-        elif task.status == task_status('CORRUPT') or tast.status == task_status('MUMBLE'):
-            game.score += 5
-        else:
-            game.score -= 5
-        return False
-    return True
+    tmp_verdict.status = checker_verdict.status
+    task.status = checker_verdict.status
+    tmp_verdict.save()
+    task.save()
+    game = db.models.Game.select().first()
+    if task.status == task_status('UP'):
+        game.score += 20
+    elif task.status == task_status('CORRUPT') or task.status == task_status('MUMBLE'):
+        game.score += 5
+    else:
+        game.score -= 5
+    game.save()
+
+    return checker_verdict.status == task_status('UP')
 
 
 @shared_task
@@ -54,9 +56,9 @@ def put_action(check_ok, task_id, round):
         checker_verdict, flag_id = run_put(
             checker_path=task.checker,
             host=team.ip,
-            vuln=task.vuln,
+            vuln=task.vulns,
             flag=flag,
-            timeout=task.checker_timeout,
+            timeout=task.timeout,
             round=round,
         )
 
@@ -68,11 +70,11 @@ def put_action(check_ok, task_id, round):
             game = db.models.Game.select().first()
             if task.status == task_status('UP'):
                 game.score += 20
-            elif task.status == task_status('CORRUPT') or tast.status == task_status('MUMBLE'):
+            elif task.status == task_status('CORRUPT') or task.status == task_status('MUMBLE'):
                 game.score += 5
             else:
                 game.score -= 5
-            db.models.Check.create(status=checker_verdict.status, task=task, command='put', message='', error='', round=round)
+            db.models.Check.create(status=checker_verdict.status, task=task, command='put', message=checker_verdict.message, error=checker_verdict.error, round=round)
             ok = False
             break
 
@@ -94,6 +96,8 @@ def get_action(put_ok, task_id, round):
         message='',
         error='',
         command='get',
+        task=task,
+        round=round
     )
 
     for get_round in rounds_to_check:
@@ -124,7 +128,7 @@ def get_action(put_ok, task_id, round):
     game = db.models.Game.select().first()
     if task.status == task_status('UP'):
         game.score += 20
-    elif task.status == task_status('CORRUPT') or tast.status == task_status('MUMBLE'):
+    elif task.status == task_status('CORRUPT') or task.status == task_status('MUMBLE'):
         game.score += 5
     else:
         game.score -= 5
@@ -136,14 +140,14 @@ def startup(**_kwargs):
     db.models.db.create_tables([db.models.Check, db.models.Flag, db.models.Game, db.models.Submit, db.models.Task, db.models.Team])
     if db.models.Game.select().count() == 0:
         db.models.Game.create(running=False, score=0, round=0)
-
+    if db.models.Team.select().count() == 0:
         teams = cfg.team_cfg()
         for team in teams:
             db.models.Team.create(name=team['name'], type=team['type'], ip=team['ip'])
-        
+    if db.models.Task.select().count() == 0:
         tasks = cfg.task_cfg()
         for task in tasks:
-            db.models.Task.create(name=task['name'], checker=task['checker'], gets=task['gets'], puts=task['puts'], status=104)
+            db.models.Task.create(name=task['name'], checker=task['checker'], gets=task['gets'], puts=task['puts'], vulns=task['vulns'], timeout=task['timeout'], status=104)
         
     start_game.apply_async(eta=cfg.game_cfg()['start_time'])
 

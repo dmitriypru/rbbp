@@ -6,13 +6,16 @@ import secrets
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+def get_full_path(path):
+    return os.path.join(BASE_DIR, 'checkers', path)
+
 def task_status(status):
     d = {'UP': 101, 'CORRUPT': 102, 'MUMBLE': 103, 'DOWN': 104, 'CHECKER_ERROR': 110}
     k = {101: 'UP', 102: 'CORRUPT', 103:'MUMBLE', 104:'DOWN', 110:'CHECKER_ERROR'}
     return d[status] if status in d.keys() else k[status] if status in k.keys() else 110
 
 def get_env():
-    env_path = os.path.join(BASE_DIR, cfg.game_cfg()['checkers_path'], 'checker_venv/')
+    env_path = os.path.join(BASE_DIR, 'checkers/', 'checker_venv/')
     env = os.environ.copy()
     env['PATH'] = f"{env_path}:{env['PATH']}"
     return env
@@ -74,7 +77,7 @@ def run_command(command, timeout, round):
     try:
         result, killed = run_command_gracefully(command,capture_output=True,timeout=timeout,env=env)
         try:
-            status = task_status(result.returncode)
+            status = result.returncode
             message = result.stdout[:1024].decode().strip()
             error = result.stderr[:1024].decode().strip()
 
@@ -85,13 +88,14 @@ def run_command(command, timeout, round):
 
     except subprocess.TimeoutExpired:
         status = task_status('DOWN')
-        private_message = 'timeout'
-        public_message = 'timeout'
+        error = 'timeout'
+        message = 'timeout'
 
-    result = db.models.Check(message=public_message,error=private_message,command=str(command),status=status, round=round)
+    result = db.models.Check(message=message,error=error,command=str(command),status=status, round=round)
     return result
 
 def run_check(checker_path, host, round, timeout):
+    checker_path = get_full_path(checker_path)
     check_command = [
         checker_path,
         'check',
@@ -103,13 +107,14 @@ def run_check(checker_path, host, round, timeout):
 
 def run_put(checker_path, host, flag, vuln, timeout, round):
     flag_id = secrets.token_hex(20)
+    checker_path = get_full_path(checker_path)
 
     put_command = [
         checker_path,
         'put',
         host,
         flag_id,
-        flag.flag,
+        flag,
         str(vuln),
     ]
 
@@ -117,6 +122,7 @@ def run_put(checker_path, host, flag, vuln, timeout, round):
 
 
 def run_get(checker_path, host, flag, timeout, round):
+    checker_path = get_full_path(checker_path)
     get_command = [
         checker_path,
         'get',

@@ -55,11 +55,11 @@ def setup_flower(config):
 def create_env(config):
     conf_path = os.path.join(BASE_DIR, 'config.yml')
     config = yaml.load(open(conf_path), Loader=yaml.FullLoader)
-    env_path = os.path.join(BASE_DIR, config['game']['checkers_path'], 'checker_venv/')
+    env_path = os.path.join(BASE_DIR, 'checkers/', 'checker_venv/')
     if not os.path.exists(env_path):
         virtualenv.create_environment(env_path)
-    if os.path.exists(os.path.join(BASE_DIR, config['game']['checkers_path'], 'requirements.txt')):
-        cmd = f"source {env_path}/bin/activate && pip install -r {os.path.join(BASE_DIR, config['game']['checkers_path'], 'requirements.txt')}"
+    if os.path.exists(os.path.join(BASE_DIR, 'checkers/', 'requirements.txt')):
+        cmd = f"source {env_path}/bin/activate && pip install -r {os.path.join(BASE_DIR, 'checkers/', 'requirements.txt')}"
         os.system(cmd)
 
 def setup_config():

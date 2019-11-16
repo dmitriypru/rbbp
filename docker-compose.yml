@@ -17,7 +17,7 @@ services:
   postgres:
     image: postgres:11
     volumes:
-      - ./docker_volumes/postgres/data:/var/lib/postgresql/data
+      - ./docker_volumes/postgres/:/var/lib/postgresql/
     env_file:
       - ./docker_cfg/postgres/postgres_env.env
     restart: on-failure
@@ -30,26 +30,32 @@ services:
     build:
       context: .
       dockerfile: docker_cfg/celery/Dockerfile
-    links:
-      - "postgres"
     volumes:
-      - ./checkers/:/checkers/
+      - ./checkers/:/background_tasks/checkers/
     restart: on-failure
+    links:
+      - "postgres:postgres"
+    depends_on:
+      - postgres
 
   celerybeat:
     build:
       context: .
       dockerfile: docker_cfg/celerybeat/Dockerfile
-    links:
-      - "postgres"
     restart: on-failure
+    links:
+      - "postgres:postgres"
+    depends_on:
+      - postgres
 
   flower:
     build:
       context: .
       dockerfile: docker_cfg/flower/Dockerfile
+    depends_on:
+      - postgres
     links:
-      - "postgres"
+      - "postgres:postgres"
     env_file:
       - docker_cfg/flower/flower_env.env
     restart: on-failure
@@ -60,9 +66,9 @@ services:
       dockerfile: docker_cfg/api/Dockerfile
     ports:
       - 8888:8888
-    links:
-      - "postgres"
     restart: on-failure
+    links:
+      - "postgres:postgres"
 
   flag_receiver:
     build:
@@ -70,9 +76,9 @@ services:
       dockerfile: docker_cfg/flag_receiver/Dockerfile
     ports:
       - 1337:1337
-    links:
-      - "postgres"
     restart: on-failure
+    links:
+      - "postgres:postgres"
 
   nginx:
     build:
